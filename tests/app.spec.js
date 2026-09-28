@@ -58,3 +58,26 @@ test('mobile fits viewport and opens navigation', async ({ page }) => {
   await expect.poll(() => page.locator('.sidebar').evaluate(el => el.getBoundingClientRect().right)).toBeLessThanOrEqual(0);
   await page.screenshot({ path: 'test-results/mobile.png', fullPage: true });
 });
+
+test('left arrow goes back, stops autoplay, and stays at the first slide', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'デモを再生' }).click();
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+  await page.getByRole('button', { name: '次のスライド' }).click();
+  await expect(page.locator('.demo-slide')).toHaveCount(2);
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('.demo-slide')).toHaveCount(2);
+  await page.getByRole('button', { name: '自動送り', exact: true }).click();
+  await expect(page.getByRole('status')).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '自動送り', exact: true })).toBeVisible();
+  // Wait beyond the cancelled generation timer to detect an unwanted advance.
+  await page.waitForTimeout(1200);
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+});
