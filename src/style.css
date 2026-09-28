@@ -10,9 +10,9 @@
 .presenting .app-footer { display: none; }
 .presenting .conversation { width: 100%; flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 12px 20px; container-type: size; }
 .presenting .slide-message { margin-bottom: 12px; animation: none; }
-.presenting .slide-frame { height: max(100px, calc(100cqh - 110px)); display: flex; align-items: center; justify-content: center; }
+.presenting .slide-frame { height: max(100px, calc(100cqh - 170px)); display: flex; align-items: center; justify-content: center; }
 .presenting .pdf-canvas { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
-.presenting .demo-slide { width: min(100%, calc((100cqh - 110px) * 16 / 9)); max-height: 100%; padding: 3%; }
+.presenting .demo-slide { width: min(100%, calc((100cqh - 170px) * 16 / 9)); max-height: 100%; padding: 3%; }
 .presenting .generation-status { height: 36px; }
 .presenting .slide-caption { margin-top: 8px; }
 .presenting .playback { position: static; transform: none; width: 100%; flex-shrink: 0; border-radius: 0; padding: 10px 20px; box-shadow: none; }
@@ -34,3 +34,6 @@
   .presenting .playback { padding: 10px 12px; }
   .presenting .demo-slide h2 { font-size: clamp(14px, 5vw, 30px); }
 }
+
+.presenting .slide-request { margin: 0 0 12px auto; padding: 10px 16px; font-size: 13px; }
+.chat-status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #798673; }

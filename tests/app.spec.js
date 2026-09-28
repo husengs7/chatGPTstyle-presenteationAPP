@@ -11,6 +11,8 @@ test('demo advances one slide at a time and resets', async ({ page }) => {
   await expect(page.locator('.demo-slide')).toHaveCount(1);
   await page.getByRole('button', { name: '次のスライド' }).click();
   await expect(page.locator('.demo-slide')).toHaveCount(2);
+  await expect(page.locator('.slide-request').last()).toHaveText('2枚目のスライドを生成して。');
+  await expect(page.locator('.playback')).not.toContainText('/ 04');
   await page.locator('main').click({ position: { x: 10, y: 90 } }); await page.keyboard.press('ArrowRight');
   await expect(page.locator('.demo-slide')).toHaveCount(3);
   await page.getByRole('button', { name: '自動送り', exact: true }).click();
