@@ -20,6 +20,7 @@ test('demo advances one slide at a time and resets', async ({ page }) => {
   await page.screenshot({ path: 'test-results/desktop.png', fullPage: true });
 });
 test('local PDF renders and invalid files are rejected', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');
   await page.locator('input[type=file]').setInputFiles({ name: 'bad.pdf', mimeType: 'application/pdf', buffer: Buffer.from('not a pdf') });
   await expect(page.getByRole('alert')).toContainText('読み込めません');
@@ -31,6 +32,20 @@ test('local PDF renders and invalid files are rejected', async ({ page }) => {
   await page.getByRole('button', { name: '次のスライド' }).click();
   await expect(page.locator('canvas')).toHaveCount(2);
   await expect(page.getByRole('button', { name: '生成完了' })).toBeDisabled();
+  const fits = () => page.locator('canvas').last().evaluate(el => {
+    const slide = el.getBoundingClientRect();
+    const controls = document.querySelector('.playback').getBoundingClientRect();
+    const header = document.querySelector('header').getBoundingClientRect();
+    return slide.top >= header.bottom && slide.bottom <= controls.top && slide.left >= document.querySelector('.sidebar').getBoundingClientRect().right && slide.right <= innerWidth;
+  });
+  await expect(page.locator('.sidebar')).toBeInViewport();
+  await expect.poll(fits).toBe(true);
+  expect((await page.locator('canvas').last().boundingBox()).width).toBeGreaterThan(1300);
+  await page.screenshot({ path: 'test-results/presentation.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('.sidebar')).toBeInViewport();
+  await expect.poll(fits).toBe(true);
+
 });
 test('mobile fits viewport and opens navigation', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 }); await page.goto('/');
