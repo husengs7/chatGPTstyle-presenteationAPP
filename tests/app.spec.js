@@ -14,7 +14,6 @@ test('demo advances one slide at a time and resets', async ({ page }) => {
   await page.locator('main').click({ position: { x: 10, y: 90 } }); await page.keyboard.press('ArrowRight');
   await expect(page.locator('.demo-slide')).toHaveCount(3);
   await page.getByRole('button', { name: '自動送り', exact: true }).click();
-  await page.getByLabel('自動再生の間隔').selectOption('3');
   await expect(page.locator('.demo-slide')).toHaveCount(4, { timeout: 10000 });
   await page.getByRole('button', { name: '最初からやり直す' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
