@@ -39,6 +39,17 @@ function Slide({ pdf, number }) {
   return <div className={`demo-slide demo-${number}`}><span className="slide-eyebrow">SLIDECHAT STUDIO <span>2026</span></span><div><p className="slide-label">{eyebrow}</p><h2>{title}</h2><p className="slide-subtitle">{subtitle}</p></div><footer><span>A LITTLE THOUGHT ABOUT ARTIFICIAL INTELLIGENCE</span><span>0{number}</span></footer><div className="orb"/></div>;
 }
 function App() {
+  const [dark, setDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem('slidechat-theme');
+      if (saved === 'dark' || saved === 'light') return saved === 'dark';
+    } catch { /* Storage may be unavailable in private browsing. */ }
+    return matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    try { localStorage.setItem('slidechat-theme', dark ? 'dark' : 'light'); } catch { /* Theme still works without storage. */ }
+  }, [dark]);
   const [pdf, setPdf] = useState(null), [fileName, setFileName] = useState('');
   const [loading, setLoading] = useState(false), [error, setError] = useState('');
   const [started, setStarted] = useState(false), [count, setCount] = useState(0);
@@ -97,7 +108,7 @@ function App() {
     {sidebar && <button className="backdrop" aria-label="メニューを閉じる" onClick={() => setSidebar(false)}/>}
     <aside className="sidebar"><a className="brand" href="./" onClick={e => { e.preventDefault(); reset(); }}><Mark small/>SlideChat<span className="beta">BETA</span></a><button className="new-chat" onClick={reset}><Icon name="plus"/>新しいプレゼン<span>↗</span></button><div className="nav-label">ワークスペース</div><button className="nav-item active" onClick={() => setSidebar(false)}><Icon name="chat"/>プレゼンテーション</button><div className="sidebar-file"><div className="nav-label">プレゼン資料</div>{fileName ? <div className="file-mini"><Icon name="file"/><span>{fileName}<small>{total} スライド · 読み込み済み</small></span></div> : <p>まだ資料がありません。<br/>PDFを追加して始めましょう。</p>}</div><div className="sidebar-bottom"><div className="local"><span/>ローカルで動作</div><p>あなたのPDFは、<br/>あなたのブラウザの中だけに。</p><div className="profile"><span className="avatar">Y</span><div>Your workspace<small>発表の準備は、ここから。</small></div><span>⌘</span></div></div></aside>
     <main onDragOver={e => { e.preventDefault(); if (!started && !loading) setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); loadFile(e.dataTransfer.files[0]); }}>
-      <header><div><button className="menu-button icon-button" aria-label="メニュー" onClick={() => setSidebar(!sidebar)}>☰</button><span className="header-title">プレゼンテーション <span className="down">⌄</span></span><span className="mode-tag">{started ? 'LIVE' : 'STUDIO'}</span></div><button className="fullscreen" onClick={fullscreen}><Icon name="expand" size={16}/><span>全画面表示</span></button></header>
+      <header><div><button className="menu-button icon-button" aria-label="メニュー" onClick={() => setSidebar(!sidebar)}>☰</button><span className="header-title">プレゼンテーション <span className="down">⌄</span></span><span className="mode-tag">{started ? 'LIVE' : 'STUDIO'}</span></div><div className="header-actions"><button className="theme-toggle icon-button" aria-label="ダークモード" aria-pressed={dark} title={dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'} onClick={() => setDark(value => !value)}><span aria-hidden="true">{dark ? '☀' : '☾'}</span></button><button className="fullscreen" onClick={fullscreen}><Icon name="expand" size={16}/><span>全画面表示</span></button></div></header>
       {dragging && <div className="drop-overlay"><Icon name="file" size={48}/>PDFをドロップして追加</div>}
       <input ref={input} type="file" accept="application/pdf,.pdf" hidden onChange={e => loadFile(e.target.files[0])}/>
       {!started ? <div className="welcome"><div className="intro"><div className="intro-badge"><span/>YOUR NEXT PRESENTATION</div><Mark/><h1>完璧なプレゼンを、<br/><span>ひとことから。</span></h1><p>あなたのスライドが、AIに生み出されていく。<br/>チャットを舞台にした、新しいプレゼンテーション。</p></div>

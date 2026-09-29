@@ -97,3 +97,22 @@ test('manual navigation is immediate while thinking remains visible', async ({ p
   await expect(page.locator('.demo-slide')).toHaveCount(3);
   await expect(page.getByRole('status')).toBeVisible();
 });
+
+test('dark mode follows initial preference and saves manual choice', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+  const toggle = page.getByRole('button', { name: 'ダークモード', exact: true });
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await toggle.click();
+  await page.reload();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await toggle.click();
+  await page.getByRole('button', { name: 'デモを再生' }).click();
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+  await expect(page.locator('.demo-slide')).toHaveCSS('background-color', 'rgb(233, 238, 227)');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(toggle).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/dark-mobile.png' });
+});

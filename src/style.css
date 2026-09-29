@@ -37,3 +37,38 @@
 
 .presenting .slide-request { margin: 0 0 12px auto; padding: 10px 16px; font-size: 13px; }
 .chat-status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #798673; }
+
+.theme-toggle { width: 32px; height: 32px; border-radius: 7px; font-size: 21px; }
+.theme-toggle:hover { background: #80808020; }
+header > .header-actions { gap: 10px; flex-shrink: 0; }
+:root[data-theme="dark"] { color-scheme: dark; color: #e5e9e3; background: #191d1b; }
+[data-theme="dark"] .sidebar { background: #141815; border-color: #343d35; }
+[data-theme="dark"] header, [data-theme="dark"] .profile { border-color: #343d35; }
+[data-theme="dark"] .composer, [data-theme="dark"] .playback { background: #222823; border-color: #414b42; }
+[data-theme="dark"] .composer textarea { color: #e5e9e3; }
+[data-theme="dark"] .new-chat, [data-theme="dark"] .upload-card,
+[data-theme="dark"] .suggestions button { background: #252d27; border-color: #475447; color: #dee8d9; }
+[data-theme="dark"] .upload-card:hover { background: #303c32; }
+[data-theme="dark"] .upload-icon, [data-theme="dark"] .avatar,
+[data-theme="dark"] .beta { background: #303b32; border-color: #4b584b; color: #c8dbc3; }
+[data-theme="dark"] .nav-item.active, [data-theme="dark"] .auto-button.enabled,
+[data-theme="dark"] .user-message { background: #334137; color: #e0eddb; }
+[data-theme="dark"] .mark, [data-theme="dark"] .intro h1 span { color: #94c3a7; }
+[data-theme="dark"] .send, [data-theme="dark"] .next-button { background: #91bea2; color: #15251b; }
+[data-theme="dark"] .mode-tag, [data-theme="dark"] .file-type { border-color: #52604d; color: #becfb2; }
+[data-theme="dark"] .nav-label, [data-theme="dark"] .sidebar-file p,
+[data-theme="dark"] .sidebar-bottom > p, [data-theme="dark"] .profile small,
+[data-theme="dark"] .file-mini small, [data-theme="dark"] .intro > p,
+[data-theme="dark"] .intro-badge, [data-theme="dark"] .upload-card small,
+[data-theme="dark"] .privacy, [data-theme="dark"] .composer > label,
+[data-theme="dark"] .composer-bottom > span, [data-theme="dark"] .suggestions,
+[data-theme="dark"] .steps, [data-theme="dark"] .steps b,
+[data-theme="dark"] .app-footer, [data-theme="dark"] .fullscreen,
+[data-theme="dark"] .slide-meta, [data-theme="dark"] .slide-caption,
+[data-theme="dark"] .thinking, [data-theme="dark"] .chat-status,
+[data-theme="dark"] .playback > p, [data-theme="dark"] .replay,
+[data-theme="dark"] .assistant-heading > span:last-child { color: #b0bcaa; }
+[data-theme="dark"] .progress-track, [data-theme="dark"] .steps i { background: #3a4539; }
+[data-theme="dark"] .drop-overlay { background: #202e23f5; border-color: #94c3a7; }
+[data-theme="dark"] .error { background: #3b2821; border-color: #956b52; color: #ffd6bd; }
+@media (max-width: 380px) { header > div { gap: 5px; } .mode-tag { display: none; } }
