@@ -41,21 +41,17 @@ function Slide({ pdf, number }) {
 function App() {
   const [pdf, setPdf] = useState(null), [fileName, setFileName] = useState('');
   const [loading, setLoading] = useState(false), [error, setError] = useState('');
-  const [started, setStarted] = useState(false), [count, setCount] = useState(0), [thinking, setThinking] = useState(false);
+  const [started, setStarted] = useState(false), [count, setCount] = useState(0);
   const [auto, setAuto] = useState(false), [prompt, setPrompt] = useState('完璧なプレゼンスライドを生成して。');
   const [sentPrompt, setSentPrompt] = useState(''), [sidebar, setSidebar] = useState(false), [dragging, setDragging] = useState(false);
   const input = useRef(null), bottom = useRef(null), loadingTask = useRef(null);
   const total = pdf?.numPages || demo.length;
   useEffect(() => () => { loadingTask.current?.destroy(); }, []);
   useEffect(() => {
-    if (!thinking) return;
-    const timer = setTimeout(() => { setCount(c => Math.min(c + 1, total)); setThinking(false); }, 1000);
+    if (!started || !auto || count >= total) return;
+    const timer = setTimeout(() => setCount(c => Math.min(c + 1, total)), 1000);
     return () => clearTimeout(timer);
-  }, [thinking, total]);
-  useEffect(() => {
-    if (!started || !auto || thinking || count >= total) return;
-    setThinking(true);
-  }, [auto, thinking, count, total, started]);
+  }, [started, auto, count, total]);
   useEffect(() => {
     if (!started || !bottom.current) return;
     const scrollToLatest = () => bottom.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
@@ -63,22 +59,21 @@ function App() {
     const observer = new ResizeObserver(scrollToLatest);
     observer.observe(bottom.current.parentElement);
     return () => observer.disconnect();
-  }, [count, thinking, started]);
+  }, [count, started]);
   useEffect(() => {
     const handle = e => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable || !started) return;
       if (e.code === 'ArrowLeft') {
         e.preventDefault();
         setAuto(false);
-        setThinking(false);
         setCount(c => c > 1 ? c - 1 : c);
         return;
       }
       if (e.code === 'Space' && e.target.tagName === 'BUTTON') return;
-      if (e.code === 'ArrowRight' || e.code === 'Space') { e.preventDefault(); if (!thinking && count < total) setThinking(true); }
+      if (e.code === 'ArrowRight' || e.code === 'Space') { e.preventDefault(); setCount(c => Math.min(c + 1, total)); }
     };
     window.addEventListener('keydown', handle); return () => window.removeEventListener('keydown', handle);
-  }, [started, thinking, count, total]);
+  }, [started, total]);
   async function loadFile(file) {
     if (!file || loading || started) return;
     if (!file.name.toLowerCase().endsWith('.pdf')) { setError('PDFファイルを選択してください。'); return; }
@@ -95,8 +90,8 @@ function App() {
     } catch (error) { console.error('PDF loading failed:', error); setError(previous => previous || 'PDFを読み込めませんでした。ファイルをご確認ください。'); }
     finally { setLoading(false); if (input.current) input.current.value = ''; }
   }
-  function start(e) { e?.preventDefault(); if (loading || !prompt.trim()) return; setSentPrompt(prompt.trim()); setStarted(true); setThinking(true); setSidebar(false); }
-  function reset() { setStarted(false); setCount(0); setThinking(false); setAuto(false); setSidebar(false); setError(''); }
+  function start(e) { e?.preventDefault(); if (loading || !prompt.trim()) return; setSentPrompt(prompt.trim()); setStarted(true); setCount(1); setSidebar(false); }
+  function reset() { setStarted(false); setCount(0); setAuto(false); setSidebar(false); setError(''); }
   async function fullscreen() { try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); } catch { setError('このブラウザでは全画面表示が利用できません。'); } }
   return <div className={`app ${started ? 'presenting' : ''} ${sidebar ? 'sidebar-open' : ''}`}>
     {sidebar && <button className="backdrop" aria-label="メニューを閉じる" onClick={() => setSidebar(false)}/>}
@@ -109,7 +104,7 @@ function App() {
         <button className={`upload-card ${pdf ? 'uploaded' : ''}`} disabled={loading} onClick={() => input.current.click()}><span className="upload-icon"><Icon name={pdf ? 'check' : 'file'} size={25}/></span><span><strong>{loading ? 'PDFを読み込んでいます…' : fileName || 'プレゼン資料を追加'}</strong><small>{pdf ? `${total}枚のスライド · クリックして差し替え` : 'PDFをドロップ、またはクリックして選択'}</small></span><span className="file-type">{pdf ? 'READY' : 'PDF'}</span></button><p className="privacy">⌁ ファイルは外部に送信されません <span>·</span> 最大500MB</p>
         <form className="composer" onSubmit={start}><label htmlFor="prompt">最初のひとこと</label><textarea id="prompt" value={prompt} maxLength={1000} onChange={e => setPrompt(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); start(); } }}/><div className="composer-bottom"><button type="button" className="attach icon-button" aria-label="PDFを添付" disabled={loading} onClick={() => input.current.click()}><Icon name="plus"/></button><span>{pdf ? `${total}枚のスライドを準備しました` : 'PDFがなくても、デモで体験できます'}</span><button className="send" type="submit" aria-label="プレゼンテーションを開始" disabled={loading || !prompt.trim()}><Icon name="arrow"/></button></div></form>
         <div className="suggestions"><span>まずは試してみる</span><button onClick={start}>✧ {pdf ? 'この資料で開始' : 'デモを再生'} <span>↗</span></button></div><div className="steps"><span><b>01</b> PDFを追加</span><i/><span><b>02</b> ひとこと送信</span><i/><span><b>03</b> プレゼン開始</span></div>
-      </div> : <><div className="conversation"><div className="user-message">{sentPrompt}</div><div className="assistant-heading"><Mark small/><strong>SlideChat</strong><span>今</span></div><p className="assistant-intro">もちろんです。完璧なプレゼンテーションを作成します。</p>{Array.from({ length: count }, (_, index) => <section className="slide-message" key={index}><div className="user-message slide-request">{index + 1}枚目のスライドを生成して。</div><div className="slide-meta"><span><span className="green-dot"/>スライド {String(index + 1).padStart(2, '0')}</span><span>SlideChat</span></div><div className="slide-frame"><Slide pdf={pdf} number={index + 1}/></div><div className="slide-caption">{index === total - 1 ? 'プレゼンテーションが完成しました。' : 'スライドを作成しました。'}</div></section>)}<div className="generation-status">{thinking && <div className="thinking" role="status"><span className="thinking-dot"/>構成を考えています<span className="ellipsis">…</span><small>スライド {count + 1} を生成中</small></div>}</div><div ref={bottom}/></div><div className="playback"><div className="playback-top"><span className="chat-status"><Mark small/>{thinking ? '生成しています…' : count === total ? '完成しました' : '次の指示を待っています'}</span><div className="playback-actions"><button className={`auto-button ${auto ? 'enabled' : ''}`} disabled={count === total} onClick={() => setAuto(!auto)}><Icon name={auto ? 'pause' : 'play'} size={15}/>{auto ? '自動送り停止' : '自動送り'}</button><button className="next-button" disabled={thinking || count === total} onClick={() => setThinking(true)}>{thinking ? '生成中…' : count === total ? '生成完了' : '次のスライド'}<Icon name={count === total ? 'check' : 'chevron'} size={16}/></button></div></div><div className="progress-track"><div style={{ width: `${count / total * 100}%` }}/></div><p>{count === total ? <button className="replay" onClick={reset}>最初からやり直す ↗</button> : '← 前のスライド / Space・→ 次のスライド'}</p></div></>}
+      </div> : <><div className="conversation"><div className="user-message">{sentPrompt}</div><div className="assistant-heading"><Mark small/><strong>SlideChat</strong><span>今</span></div><p className="assistant-intro">もちろんです。完璧なプレゼンテーションを作成します。</p>{Array.from({ length: count }, (_, index) => <section className="slide-message" key={index}><div className="user-message slide-request">{index + 1}枚目のスライドを生成して。</div><div className="slide-meta"><span><span className="green-dot"/>スライド {String(index + 1).padStart(2, '0')}</span><span>SlideChat</span></div><div className="slide-frame"><Slide pdf={pdf} number={index + 1}/></div><div className="slide-caption">{index === total - 1 ? 'プレゼンテーションが完成しました。' : 'スライドを作成しました。'}</div></section>)}<div className="generation-status"><div className="thinking" role="status"><span className="thinking-dot"/>構成を考えています<span className="ellipsis">…</span></div></div><div ref={bottom}/></div><div className="playback"><div className="playback-top"><span className="chat-status"><Mark small/>{count === total ? '完成しました' : '次の指示を待っています'}</span><div className="playback-actions"><button className={`auto-button ${auto ? 'enabled' : ''}`} disabled={count === total} onClick={() => setAuto(!auto)}><Icon name={auto ? 'pause' : 'play'} size={15}/>{auto ? '自動送り停止' : '自動送り'}</button><button className="next-button" disabled={count === total} onClick={() => setCount(c => Math.min(c + 1, total))}>{count === total ? '生成完了' : '次のスライド'}<Icon name={count === total ? 'check' : 'chevron'} size={16}/></button></div></div><div className="progress-track"><div style={{ width: `${count / total * 100}%` }}/></div><p>{count === total ? <button className="replay" onClick={reset}>最初からやり直す ↗</button> : '← 前のスライド / Space・→ 次のスライド'}</p></div></>}
       {error && <div className="error" role="alert">{error}<button aria-label="エラーを閉じる" onClick={() => setError('')}><Icon name="close" size={16}/></button></div>}<footer className="app-footer">{started ? 'SlideChat' : 'これは「生成」を演じるプレゼンテーションツールです。実際のAI生成は行いません。'}<span>A little irony. A great presentation.</span></footer>
     </main>
   </div>;

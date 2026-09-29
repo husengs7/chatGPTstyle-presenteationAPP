@@ -75,9 +75,25 @@ test('left arrow goes back, stops autoplay, and stays at the first slide', async
   await expect(page.getByRole('status')).toBeVisible();
   await page.keyboard.press('ArrowLeft');
   await expect(page.locator('.demo-slide')).toHaveCount(1);
-  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByRole('status')).toContainText('構成を考えています');
   await expect(page.getByRole('button', { name: '自動送り', exact: true })).toBeVisible();
-  // Wait beyond the cancelled generation timer to detect an unwanted advance.
+  // Wait beyond the cancelled autoplay timer to detect an unwanted advance.
   await page.waitForTimeout(1200);
   await expect(page.locator('.demo-slide')).toHaveCount(1);
+});
+
+test('manual navigation is immediate while thinking remains visible', async ({ page }) => {
+  await page.goto('/');
+  await page.clock.install();
+  await page.clock.pauseAt(new Date());
+  await page.getByRole('button', { name: 'デモを再生' }).click();
+  await expect(page.locator('.demo-slide')).toHaveCount(1);
+  for (let number = 2; number <= 4; number++) {
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.demo-slide')).toHaveCount(number);
+    await expect(page.getByRole('status')).toContainText('構成を考えています');
+  }
+  await page.keyboard.press('ArrowLeft');
+  await expect(page.locator('.demo-slide')).toHaveCount(3);
+  await expect(page.getByRole('status')).toBeVisible();
 });
